@@ -87,6 +87,8 @@ def GetTempo(mid, MIDIArray):
             tempos[curTime:curTime + elapsed] = int(curTempo)
         curTempo = tempo[0]
         curTime += elapsed
+    if(tempos[-1] == 0):
+        tempos[curTime:] = set_tempos[-1][0]
     return tempos
 
 
@@ -97,8 +99,7 @@ def CreatePianoRoll(mid, MIDIArray):
     song = []
     while i < MIDIArray.shape[0]:
 
-        bpm = int(mido.tempo2bpm(tempos[i]))
-        mspb = 60000 // (bpm * 4) # miliseconds per beat
+        mspb = (tempos[i] // 4000)[0] # miliseconds per sixteenth beat
         tol = mspb // 2
 
 
@@ -132,11 +133,8 @@ def SegmentSong(song):
     for i in range(numSegs):
         segs.append(song[i*128 : (i+1)*128, :])
         numBeats += 128
-    print(numBeats)
     if(numBeats < song.shape[0]):
         finalSeg = song[numBeats:, :]
-        print(segs[-1].shape)
-        print(np.zeros((128-(song.shape[0]-numBeats), 128)).shape)
         segs.append(np.concatenate((finalSeg, (np.zeros((128-(song.shape[0]-numBeats), 88))))))
 
     for i in range(len(segs)):
