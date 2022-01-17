@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch
 import time
+import numpy as np
 
 
 def TernaryTanh(x):
@@ -39,6 +40,38 @@ def weights_init(init_type='gaussian'):
 
     return init_fun
 
+class Dense(nn.Module):
+    def __init__(self, in_channels, out_channels, before = None, after = False, bias=False, device=None, dtype=None):
+        super(Dense, self).__init__()
+        self.dense = nn.Linear(in_channels, out_channels, bias, device, dtype)
+        self.dense.apply(weights_init('gaussian'))
+
+        if after=='BN':
+            self.after = nn.BatchNorm2d(out_channels)
+        elif after=='Tanh':
+            self.after = torch.tanh
+        elif after=='sigmoid':
+            self.after = torch.sigmoid
+        elif after == 'ternaryTanh':
+            self.after = TernaryTanh
+        elif after == 'softmax':
+            self.after = nn.Softmax(dim = 1)
+
+        if before=='ReLU':
+            self.before = nn.ReLU(inplace=True)
+        elif before=='LReLU':
+            self.before = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+
+    def forward(self, x):
+        if hasattr(self, 'before'):
+            x = self.before(x)
+
+        x = self.dense(x)
+
+        if hasattr(self, 'after'):
+            x = self.after(x)
+
+        return x
 
 class Cvi(nn.Module):
     def __init__(self, in_channels, out_channels, before=None, after=False, kernel_size=4, stride=2,
@@ -57,6 +90,10 @@ class Cvi(nn.Module):
             self.after = TernaryTanh
         elif after == 'softmax':
             self.after = nn.Softmax(dim = 1)
+        elif(after == 'maxPooling'):
+            self.after = nn.MaxPool2d(kernel_size = 2)
+        elif(after == 'flatten'):
+            self.after = nn.Flatten
 
         if before=='ReLU':
             self.before = nn.ReLU(inplace=True)
@@ -93,6 +130,8 @@ class CvTi(nn.Module):
             self.after = TernaryTanh
         elif after == 'softmax':
             self.after = Softmax
+        elif(after == 'maxPooling'):
+            self.after = nn.MaxPool2d()
 
         if before=='ReLU':
             self.before = nn.ReLU(inplace=True)
@@ -160,17 +199,17 @@ class Discriminator(nn.Module):
 
         self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv2 = Cvi(32, 32, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv3 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv4 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv4 = Cvi(128, 128, before='LReLU', after='softmax', kernel_size = 3)
 
-        self.Cv5 = Cvi(128, 128, before='LReLU', after='BN', kernel_size = 3)
+        self.l1 = Dense(3072, 512, before = 'ReLu' , after = 'softmax')
 
-        self.Cv6 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3)
+        self.l2 = Dense(512, 128, before = 'ReLu' , after = 'softmax')
 
-        self.Cv7 = Cvi(256, 512, before='LReLU', after='BN', kernel_size = 3)
+        self.l3 = Dense(128, 2, before = 'ReLu' , after = 'softmax')
 
         self.Cv8 = Cvi(512, 2, before='LReLU', after='softmax', kernel_size = 3)
 
@@ -180,16 +219,16 @@ class Discriminator(nn.Module):
         x2 = self.Cv2(x1)
         x3 = self.Cv3(x2)
         x4 = self.Cv4(x3)
-        x5 = self.Cv5(x4)
-        x6 = self.Cv6(x5)
-        x7 = self.Cv7(x6)
-        out = self.Cv8(x7)
+        x4 = x4.view(x4.size(0),-1)
+        x5 = self.l1(x4)
+        x6 = self.l2(x5)
+        out = self.l3(x6)
 
         return out
 
 if __name__ == '__main__':
     #BCHW
-    size = (3, 3, 256, 256)
+    '''size = (8, 1, 88, 128)
     input = torch.ones(size)
     l1 = nn.L1Loss()
     input.requires_grad = True
@@ -207,15 +246,16 @@ if __name__ == '__main__':
 
     convT = CvTi(3, 3)
     outputT = convT(output)
-    print(outputT.shape)
+    print(outputT.shape)'''
 
 
     #Generator test
-    model = Generator()
+    print("GENERATOR")
+    model = Generator(input_channels=1)
     output = model(input)
     print(output.shape)
     print(output)
-    loss = l1(output, torch.randn(3, 1, 256, 256))
+    loss = l1(output, torch.randn(8, 1, 88, 128))
     loss.backward()
     print(loss.item())
 

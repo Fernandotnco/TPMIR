@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
-def DatasetSplit(metadata_file, datasetName = 'dataset/', val_rate = 0.2, test_rate = 0.2):
+def DatasetSplit(metadata_file, dataset_dir = 'dataset', val_rate = 0.2, test_rate = 0.2):
 
-    with open(datasetName + metadata_file) as f:
+    with open(dataset_dir + '/' + metadata_file) as f:
             metadata = json.load(f)
 
     print(len(metadata))

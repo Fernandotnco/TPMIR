@@ -34,6 +34,7 @@ def get_parser():
     parser.add_argument('-s', '--image_size', type=int, default=286)
     parser.add_argument('-cs', '--crop_size', type=int, default=256)
     parser.add_argument('-lr', '--lr', type=float, default=2e-4)
+    parser.add_argument('--dataset_dir', type=str, default='dataset')
 
     return parser
 
@@ -182,14 +183,14 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             out_2_D1 = D1(D_input_2)
 
             # L_CGAN1
-            zeros = torch.tensor(np.zeros((newCompass.shape[0], 1, 1, 1)))
-            ones = torch.tensor(np.ones((newCompass.shape[0], 1, 1, 1)))
+            zeros = torch.tensor(np.zeros((newCompass.shape[0], 1)))
+            ones = torch.tensor(np.ones((newCompass.shape[0], 1)))
 
-            label_1_D1 = torch.cat([zeros, ones], dim = 1)
-            label_2_D1 = torch.cat([ones, zeros], dim = 1)
+            label_1_D1 = torch.cat([zeros, ones], dim = 1).to(device)
+            label_2_D1 = torch.cat([ones, zeros], dim = 1).to(device)
 
-            loss_1_D1 = criterionGAN(out_1_D1, label_1_D1)
-            loss_2_D1 = criterionGAN(out_2_D1, label_2_D1)
+            loss_1_D1 = criterionGAN(out_1_D1, label_1_D1).to(device)
+            loss_2_D1 = criterionGAN(out_2_D1, label_2_D1).to(device)
             
             D_L_CGAN1 = loss_1_D1 + loss_2_D1
 
@@ -205,15 +206,15 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             # L_CGAN1
             fake1 = torch.cat([prevImgs, newCompass], dim=3)
             real1 = torch.cat([prevImgs, images], dim=3)
-            D_input_1 = torch.cat([fake1.detach(), real1], dim = 1)
-            D_input_2 = torch.cat([real1, fake1.detach()], dim = 1)
+            D_input_1 = torch.cat([fake1.detach(), real1], dim = 1).to(device)
+            D_input_2 = torch.cat([real1, fake1.detach()], dim = 1).to(device)
             out_1_D1 = D1(D_input_1)
             out_2_D1 = D1(D_input_2)
 
             
 
-            loss_1_G1 = criterionGAN(out_1_D1, label_2_D1)
-            loss_2_G1 = criterionGAN(out_2_D1, label_1_D1)
+            loss_1_G1 = criterionGAN(out_1_D1, label_2_D1).to(device)
+            loss_2_G1 = criterionGAN(out_2_D1, label_1_D1).to(device)
             G_L_CGAN1 = loss_1_G1 + loss_2_G1
 
 
@@ -265,7 +266,7 @@ def main(parser):
         D1.load_state_dict(fix_model_state_dict(D1_weights))
 
 
-    train_img_list, val_img_list, test_img_list = DatasetSplit('dbMetadata.json')
+    train_img_list, val_img_list, test_img_list = DatasetSplit('dbMetadata.json', dataset_dir = parser.dataset_dir)
 
     mean = (0.5,)
     std = (0.5,)
@@ -274,8 +275,8 @@ def main(parser):
     batch_size = parser.batch_size
     num_epochs = parser.epoch
 
-    train_dataset = ImageDataset(img_list=train_img_list, dir = 'dataset')
-    val_dataset = ImageDataset(img_list=val_img_list, dir = 'dataset')
+    train_dataset = ImageDataset(img_list=train_img_list, dir = parser.dataset_dir)
+    val_dataset = ImageDataset(img_list=val_img_list, dir = parser.dataset_dir)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True) #num_workers=4
 
