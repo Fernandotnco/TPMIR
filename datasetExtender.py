@@ -28,14 +28,18 @@ if __name__ == '__main__':
         metadata = json.load(f)
     for i in range(len(metadata)):
         obj = metadata[i]
+        print(obj['filename'])
+        shifts = list(range(-6, 7, 1))
         for imgName in obj['images']:
-            shifts = []
             for shift in range(-6, 7, 1):
                 img = cv2.imread(datasetName + imgName, cv2.IMREAD_GRAYSCALE)
                 shifted = shiftPianoRoll(img, shift)
                 if(shifted is not None):
-                    shifts.append(shift)
                     cv2.imwrite(datasetName + imgName[:-4] + "_s" + str(shift) + '.png', shifted)
+                else:
+                    if shift in shifts:
+                        shifts.remove(shift)
+        print(shifts)
         metadata[i]['shifts'] = shifts
     with open(datasetName + 'dbMetadata.json', 'w') as fout:
         json.dump(metadata, fout)
