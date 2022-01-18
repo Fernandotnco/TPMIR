@@ -182,6 +182,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             out_1_D1 = D1(D_input_1)
             out_2_D1 = D1(D_input_2)
 
+
             # L_CGAN1
             zeros = torch.tensor(np.zeros((newCompass.shape[0], 1)))
             ones = torch.tensor(np.ones((newCompass.shape[0], 1)))
@@ -191,6 +192,15 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             loss_1_D1 = criterionGAN(out_1_D1, label_1_D1).to(device)
             loss_2_D1 = criterionGAN(out_2_D1, label_2_D1).to(device)
+
+            '''print(out_1_D1)
+            print(label_1_D1)
+            print(loss_1_D1)
+
+            print(out_2_D1)
+            print(label_2_D1)
+            print(loss_2_D1)'''
+            
             
             D_L_CGAN1 = loss_1_D1 + loss_2_D1
 
@@ -200,7 +210,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             optimizerD.step()
 
             # Train Generator
-            set_requires_grad([D1, D1], False)
+            set_requires_grad([D1, D1], True)
             optimizerG.zero_grad()
 
             # L_CGAN1
@@ -210,7 +220,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             D_input_2 = torch.cat([real1, fake1.detach()], dim = 1).to(device)
             out_1_D1 = D1(D_input_1)
             out_2_D1 = D1(D_input_2)
-
             
 
             loss_1_G1 = criterionGAN(out_1_D1, label_2_D1).to(device)
@@ -220,7 +229,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss = G_L_CGAN1
-            G_loss.requires_grad = True
+            #G_loss.requires_grad = True
             G_loss.backward()
             optimizerG.step()
 
