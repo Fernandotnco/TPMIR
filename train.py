@@ -202,10 +202,10 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             real1 = torch.cat([prevImgs, images], dim=3)
             aux = torch.cat([fake1.detach(), real1], dim = 1)
-            D_input_G1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
+            D_input_G1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
 
             aux = torch.cat([fake2.detach(), real1], dim = 1)
-            D_input_G2 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
+            D_input_G2 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
 
             out_1_D1 = D1(D_input_G1)
             out_2_D1 = D1(D_input_G2)
@@ -217,8 +217,8 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             aux = torch.cat([zeros, ones], axis = 1)
 
-            labels = torch.cat([aux[l,c], aux[l,c_diff]], axis = 1)
-            inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1)
+            labels = torch.cat([aux[l,c], aux[l,c_diff]], axis = 1).to(device)
+            inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1).to(device)
 
             loss_1_D1 = criterionGAN(out_1_D1, labels).to(device)
             loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
