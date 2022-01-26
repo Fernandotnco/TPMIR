@@ -38,6 +38,7 @@ def get_parser():
     parser.add_argument('-cs', '--crop_size', type=int, default=256)
     parser.add_argument('-lr', '--lr', type=float, default=2e-4)
     parser.add_argument('--dataset_dir', type=str, default='dataset')
+    parser.add_argument('--load_dir', type=str, default='./')
 
     return parser
 
@@ -86,30 +87,29 @@ def evaluate(G1,G2, dataset, device, filename):
     plt.imshow(img[6][0,:,:])
     plt.show()
 
-    save_image(concat[6][0,:,:], filename+'_Generated.jpg')
+    #save_image(concat[6][0,:,:], filename+'_Generated.jpg')
 
-def plot_log(data, save_model_name='model'):
+def plot_log(data, save_model_name='model', load_dir = '.'):
     plt.cla()
     plt.plot(data['G1'], label='G1_loss ')
     plt.plot(data['G2'], label='G2_loss ')
-    plt.plot(data['D'], label='D_loss ')
     plt.legend()
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.title('Loss')
-    plt.savefig('./logs/'+save_model_name+'.png')
+    plt.savefig(load_dir + 'logs/'+save_model_name+'.png')
 
-def check_dir():
-    if not os.path.exists('./logs'):
-        os.mkdir('./logs')
-    if not os.path.exists('./checkpoints'):
-        os.mkdir('./checkpoints')
-    if not os.path.exists('./result'):
-        os.mkdir('./result')
+def check_dir(load_dir):
+    if not os.path.exists(load_dir + 'logs'):
+        os.mkdir(load_dir + 'logs')
+    if not os.path.exists(load_dir + 'checkpoints'):
+        os.mkdir(load_dir + 'checkpoints')
+    if not os.path.exists(load_dir + 'result'):
+        os.mkdir(load_dir + 'result')
 
 def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_model_name='model'):
 
-    check_dir()
+    check_dir(parser.load_dir)
     print("TRAINING")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -334,17 +334,17 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
         good_G2s.append(good_G2)
         t_epoch_start = time.time()
         #plot_log({'G1':g1_losses, 'G2':g2_losses, 'D':d_losses}, save_model_name)
-        plot_log({'G1': good_G1s, 'G2': good_G2s}, save_model_name)
+        plot_log({'G1': good_G1s, 'G2': good_G2s}, save_model_name, parser.load_dir)
 
         if(epoch%10 == 0):
             if parser.load is not None:
-                torch.save(G1.state_dict(), 'checkpoints/'+save_model_name+'_G1_'+str(epoch + int(parser.load) + 1)+'.pth')
-                torch.save(G2.state_dict(), 'checkpoints/'+save_model_name+'_G2_'+str(epoch + int(parser.load) + 1)+'.pth')
-                torch.save(D1.state_dict(), 'checkpoints/'+save_model_name+'_D1_'+str(epoch+ int(parser.load) + 1)+'.pth')
+                torch.save(G1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G1_'+str(epoch + int(parser.load) + 1)+'.pth')
+                torch.save(G2.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G2_'+str(epoch + int(parser.load) + 1)+'.pth')
+                torch.save(D1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_D1_'+str(epoch+ int(parser.load) + 1)+'.pth')
             else:
-                torch.save(G1.state_dict(), 'checkpoints/'+save_model_name+'_G1_'+str(epoch)+'.pth')
-                torch.save(G2.state_dict(), 'checkpoints/'+save_model_name+'_G2_'+str(epoch)+'.pth')
-                torch.save(D1.state_dict(), 'checkpoints/'+save_model_name+'_D1_'+str(epoch)+'.pth')
+                torch.save(G1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G1_'+str(epoch)+'.pth')
+                torch.save(G2.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G2_'+str(epoch)+'.pth')
+                torch.save(D1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_D1_'+str(epoch)+'.pth')
             G1.eval()
             G2.eval()
             evaluate(G1, G2, val_dataset, device, '{:s}/val_{:d}'.format('result', epoch))
@@ -362,13 +362,13 @@ def main(parser):
     if parser.load is not None:
         print('load checkpoint ' + parser.load)
 
-        G1_weights = torch.load('./checkpoints/ST-CGAN_G1_'+parser.load+'.pth')
+        G1_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_G1_'+parser.load+'.pth')
         G1.load_state_dict(fix_model_state_dict(G1_weights))
 
-        G2_weights = torch.load('./checkpoints/ST-CGAN_G2_'+parser.load+'.pth')
+        G2_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_G2_'+parser.load+'.pth')
         G2.load_state_dict(fix_model_state_dict(G2_weights))
 
-        D1_weights = torch.load('./checkpoints/ST-CGAN_D1_'+parser.load+'.pth')
+        D1_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_D1_'+parser.load+'.pth')
         D1.load_state_dict(fix_model_state_dict(D1_weights))
 
 
