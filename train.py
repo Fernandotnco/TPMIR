@@ -15,6 +15,7 @@ import argparse
 import time
 import torch
 import os
+import cv2
 
 from numpy.random import default_rng
 
@@ -85,7 +86,7 @@ def evaluate(G1,G2, dataset, device, filename):
     plt.imshow(img[6][0,:,:])
     plt.show()
 
-    save_image(concat, filename+'_Generated.jpg')
+    save_image(concat[6][0,:,:], filename+'_Generated.jpg')
 
 def plot_log(data, save_model_name='model'):
     plt.cla()
@@ -141,7 +142,6 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
                                   betas=(beta1, beta2))
 
     criterionGAN = nn.L1Loss().to(device)
-    lossRate = 5
 
     torch.backends.cudnn.benchmark = True
 
@@ -155,6 +155,9 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
     g2_losses = []
     d_losses = []
 
+    good_G1s = []
+    good_G2s = []
+
     for epoch in range(num_epochs+1):
         print(epoch)
 
@@ -166,6 +169,9 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
         epoch_g1_loss = 0.0
         epoch_g2_loss = 0.0
         epoch_d_loss = 0.0
+
+        good_G1 = 0
+        good_G2 = 0
 
         print('-----------')
         print('Epoch {}/{}'.format(epoch, num_epochs))
@@ -230,13 +236,26 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             print(out_2_D1)
             print(labels)
             print(loss_2_D1)'''
+
+            if(loss_2_D1 > 0.4):
+              cv2.imwrite("goodImg.png_G2", np.array(newCompass2[0][0,:,:].cpu())* 2)
+              cv2.imwrite("goodImg2.png_G2", np.array(newCompass2[1][0,:,:].cpu())* 2)
+              good_G2 +=1
+              '''print(out_2_D1)
+              print(labels)'''
+            if(loss_1_D1 > 0.4):
+              cv2.imwrite("goodImg_G1.png", np.array(newCompass2[0][0,:,:].cpu())* 2)
+              cv2.imwrite("goodImg2_G1.png", np.array(newCompass2[1][0,:,:].cpu())* 2)
+              good_G1 +=1
+              '''print(out_1_D1)
+              print(labels)'''
             
             
             D_L_CGAN1 = loss_1_D1 + loss_2_D1
 
             # total
             D_loss = D_L_CGAN1
-            if(epoch % 5 == 0):
+            if(epoch % 3 == 0):
               D_loss.backward()
               optimizerD.step()
 
@@ -271,16 +290,17 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             out_3_D1 = D1(D_input_3)
             '''print(out_3_D1)
-            print(np.sum(np.array(newCompass1[0][0].cpu())))'''
+            print(np.sum(np.array(newCompass1[0][0].cpu())))
+            cv2.imwrite("test.png", np.array(D_input_3[0][0,:,:].cpu())* 2)'''
 
 
             loss_1_G1 = criterionGAN(out_D1_G1, inv_labels).to(device)
             loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
-            G_L_CGAN1 = loss_1_G1 + loss_2_G1
+            G_L_CGAN1 = loss_1_G1*3 + loss_2_G1
 
             loss_1_G2 = criterionGAN(out_D1_G2, inv_labels).to(device)
             loss_2_G2 = criterionGAN(out_3_D1, labels)
-            G_L_CGAN2 = loss_1_G2 + loss_2_G2
+            G_L_CGAN2 = loss_1_G2*3 + loss_2_G2
 
 
 
@@ -304,16 +324,19 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
         t_epoch_finish = time.time()
         print('-----------')
-        print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Epoch_G2_Loss:{:.4f}'.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, epoch_g2_loss/batch_size))
+        print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Good_G1: {} || Epoch_G2_Loss:{:.4f} || Good_G2: {} '.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, good_G1 ,epoch_g2_loss/batch_size, good_G2))
         print('timer: {:.4f} sec.'.format(t_epoch_finish - t_epoch_start))
 
         d_losses += [epoch_d_loss/batch_size]
         g1_losses += [epoch_g1_loss/batch_size]
         g2_losses += [epoch_g2_loss/batch_size]
+        good_G1s.append(good_G1)
+        good_G2s.append(good_G2)
         t_epoch_start = time.time()
-        plot_log({'G1':g1_losses, 'G2':g2_losses, 'D':d_losses}, save_model_name)
+        #plot_log({'G1':g1_losses, 'G2':g2_losses, 'D':d_losses}, save_model_name)
+        plot_log({'G1': good_G1s, 'G2': good_G2s}, save_model_name)
 
-        if(epoch%1 == 0):
+        if(epoch%10 == 0):
             if parser.load is not None:
                 torch.save(G1.state_dict(), 'checkpoints/'+save_model_name+'_G1_'+str(epoch + int(parser.load) + 1)+'.pth')
                 torch.save(G2.state_dict(), 'checkpoints/'+save_model_name+'_G2_'+str(epoch + int(parser.load) + 1)+'.pth')
