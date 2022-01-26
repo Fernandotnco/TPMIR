@@ -238,14 +238,14 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             print(loss_2_D1)'''
 
             if(loss_2_D1 > 0.4):
-              cv2.imwrite("goodImg.png_G2", np.array(newCompass2[0][0,:,:].cpu())* 2)
-              cv2.imwrite("goodImg2.png_G2", np.array(newCompass2[1][0,:,:].cpu())* 2)
+              cv2.imwrite("goodImg_G2.png", np.array(newCompass2[0][0,:,:].cpu())* 254)
+              cv2.imwrite("goodImg2._G2.png", np.array(newCompass2[1][0,:,:].cpu())* 254)
               good_G2 +=1
               '''print(out_2_D1)
               print(labels)'''
             if(loss_1_D1 > 0.4):
-              cv2.imwrite("goodImg_G1.png", np.array(newCompass2[0][0,:,:].cpu())* 2)
-              cv2.imwrite("goodImg2_G1.png", np.array(newCompass2[1][0,:,:].cpu())* 2)
+              cv2.imwrite("goodImg_G1.png", np.array(newCompass2[0][0,:,:].cpu())* 254)
+              cv2.imwrite("goodImg2_G1.png", np.array(newCompass2[1][0,:,:].cpu())* 254)
               good_G1 +=1
               '''print(out_1_D1)
               print(labels)'''
