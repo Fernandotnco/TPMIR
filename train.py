@@ -158,6 +158,12 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
     good_G1s = []
     good_G2s = []
 
+    
+    blackImg = torch.zeros((parser.batch_size, 1, 88, 128)).to(device)
+    zeros = torch.zeros((parser.batch_size, 1)).to(device)
+    ones = torch.ones((parser.batch_size, 1)).to(device)
+
+
     for epoch in range(num_epochs+1):
         print(epoch)
 
@@ -226,8 +232,6 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
 
             # L_CGAN1
-            zeros = torch.tensor(np.zeros((newCompass1.shape[0], 1)))
-            ones = torch.tensor(np.ones((newCompass1.shape[0], 1)))
 
             aux = torch.cat([zeros, ones], axis = 1)
 
