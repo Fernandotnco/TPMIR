@@ -258,7 +258,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             # total
             D_loss = D_L_CGAN1
-            if(epoch % 3 == 0):
+            if(epoch % 2 == 0):
               D_loss.backward()
               optimizerD.step()
 
