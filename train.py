@@ -203,8 +203,11 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             l = np.array(range(newCompass1.shape[0]))
             l = np.reshape(l,(newCompass1.shape[0], 1))
 
+            blackImg = np.zeros(newCompass1.shape).to(device)
+
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
             fake2 = torch.cat([prevImgs, newCompass2], dim=3)
+            fake3 = torch.cat([prevImgs, blackImg], dim=3)
 
 
             real1 = torch.cat([prevImgs, images], dim=3)
@@ -214,8 +217,12 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             aux = torch.cat([fake2.detach(), real1], dim = 1)
             D_input_G2 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
 
+            aux = torch.cat([fake3.detach(), real1], dim = 1)
+            D_input_black = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
+
             out_1_D1 = D1(D_input_G1)
             out_2_D1 = D1(D_input_G2)
+            out_3_D1 = D1(D_input_black)
 
 
             # L_CGAN1
@@ -229,6 +236,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             loss_1_D1 = criterionGAN(out_1_D1, labels).to(device)
             loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
+            loss_3_D1 = criterionGAN(out_3_D1, labels).to(device)
 
             '''print(out_1_D1)
             print(labels)
@@ -252,7 +260,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
               print(labels)'''
             
             
-            D_L_CGAN1 = loss_1_D1 + loss_2_D1
+            D_L_CGAN1 = loss_1_D1 + loss_2_D1 + loss_3_D1
 
             # total
             D_loss = D_L_CGAN1
