@@ -173,6 +173,9 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
         good_G1 = 0
         good_G2 = 0
 
+        zero_G1 = 0
+        zero_G2 = 0
+
         print('-----------')
         print('Epoch {}/{}'.format(epoch, num_epochs))
         print('(train)')
@@ -296,11 +299,21 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             loss_1_G1 = criterionGAN(out_D1_G1, inv_labels).to(device)
             loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
-            G_L_CGAN1 = loss_1_G1*3 + loss_2_G1
+            loss_3_G1 = 2.5 if np.sum(np.array(newCompass1[0][0].cpu())) == 0 else 0
+            loss_4_G1 = 2.5 if np.sum(np.array(newCompass1[1][0].cpu())) == 0 else 0
+
+
+            G_L_CGAN1 = loss_1_G1*3 + loss_2_G1 + loss_3_G1 + loss_4_G1
 
             loss_1_G2 = criterionGAN(out_D1_G2, inv_labels).to(device)
             loss_2_G2 = criterionGAN(out_3_D1, labels)
-            G_L_CGAN2 = loss_1_G2*3 + loss_2_G2
+            loss_3_G2 = 2.5 if np.sum(np.array(newCompass2[0][0].cpu())) == 0 else 0
+            loss_4_G2 = 2.5 if np.sum(np.array(newCompass2[1][0].cpu())) == 0 else 0
+
+            G_L_CGAN2 = loss_1_G2*3 + loss_2_G2 + loss_3_G2 + loss_4_G2
+
+            zero_G1 += int(loss_3_G1/2.5 + loss_4_G1/2.5)
+            zero_G2 += int(loss_3_G2/2.5 + loss_4_G2/2.5)
 
 
 
@@ -324,7 +337,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
         t_epoch_finish = time.time()
         print('-----------')
-        print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Good_G1: {} || Epoch_G2_Loss:{:.4f} || Good_G2: {} '.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, good_G1 ,epoch_g2_loss/batch_size, good_G2))
+        print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Good_G1: {} || zero_G1: {} ||Epoch_G2_Loss:{:.4f} || Good_G2: {} || zero_G2: {}'.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, good_G1, zero_G1,epoch_g2_loss/batch_size, good_G2, zero_G2))
         print('timer: {:.4f} sec.'.format(t_epoch_finish - t_epoch_start))
 
         d_losses += [epoch_d_loss/batch_size]
@@ -372,7 +385,7 @@ def main(parser):
         D1.load_state_dict(fix_model_state_dict(D1_weights))
 
 
-    train_img_list, val_img_list, test_img_list = DatasetSplit('dbMetadata.json', dataset_dir = parser.dataset_dir)
+    train_img_list, val_img_list, test_img_list = DatasetSplit('dbMetadata.json', dataset_dir = parser.dataset_dir, val_rate = 0.1, test_rate = 0.05)
 
     mean = (0.5,)
     std = (0.5,)
