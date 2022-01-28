@@ -203,7 +203,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             l = np.array(range(newCompass1.shape[0]))
             l = np.reshape(l,(newCompass1.shape[0], 1))
 
-            blackImg = np.zeros(newCompass1.shape).to(device)
+            loss_2_D1 = criterionGAN(out_2_D1, labels).to(device))
 
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
             fake2 = torch.cat([prevImgs, newCompass2], dim=3)
