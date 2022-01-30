@@ -211,7 +211,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
             fake2 = torch.cat([prevImgs, newCompass2], dim=3)
-            fake3 = torch.cat([prevImgs, blackImg], dim=3)
+            fake3 = torch.cat([prevImgs, blackImg[0:newCompass1.shape[0]]], dim=3)
 
 
             real1 = torch.cat([prevImgs, images], dim=3)
@@ -231,7 +231,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             # L_CGAN1
 
-            aux = torch.cat([zeros, ones], axis = 1)
+            aux = torch.cat([zeros[0:newCompass1.shape[0]], ones[0:newCompass1.shape[0]]], axis = 1)
 
             labels = torch.cat([aux[l,c], aux[l,c_diff]], axis = 1).to(device)
             inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1).to(device)
