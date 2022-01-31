@@ -158,13 +158,13 @@ class Generator(nn.Module):
 
         self.Cv1 = Cvi(32, 64, before='LReLU', after='BN')
 
-        self.Cv2 = Cvi(64, 128, before='LReLU', after='BN', padding = 2, dilation = 2)
+        self.Cv2 = Cvi(64, 128, before='LReLU', after='BN')
 
-        self.Cv3 = Cvi(128, 256, before='LReLU', after='BN', stride = 5, dilation = 1, padding = 3)
+        self.Cv3 = Cvi(128, 256, before='LReLU', after='BN', stride = 1)
 
-        self.CvT4 = CvTi(256, 128, before='ReLU', after='BN', padding = 2, stride = 5)
+        self.CvT4 = CvTi(256, 128, before='ReLU', after='BN', stride = 1)
 
-        self.CvT5 = CvTi(256, 64, before='ReLU', after='BN', padding = 0)
+        self.CvT5 = CvTi(256, 64, before='ReLU', after='BN')
 
         self.CvT6 = CvTi(128, 32, before='ReLU', after='BN')
 
@@ -205,7 +205,7 @@ class Discriminator(nn.Module):
 
         self.Cv4 = Cvi(128, 128, before='LReLU', after='softmax', kernel_size = 3)
 
-        self.l1 = Dense(3072, 512, before = 'ReLu' , after = 'softmax')
+        self.l1 = Dense(1536, 512, before = 'ReLu' , after = 'softmax')
 
         self.l2 = Dense(512, 128, before = 'ReLu' , after = 'softmax')
 
