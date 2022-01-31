@@ -127,15 +127,15 @@ def CreatePianoRoll(mid, MIDIArray):
 
 def SegmentSong(song):
 
-    numSegs = song.shape[0] // 128
+    numSegs = song.shape[0] // 64
     segs = []
     numBeats = 0
     for i in range(numSegs):
-        segs.append(song[i*128 : (i+1)*128, :])
-        numBeats += 128
+        segs.append(song[i*64 : (i+1)*64, :])
+        numBeats += 64
     if(numBeats < song.shape[0]):
         finalSeg = song[numBeats:, :]
-        segs.append(np.concatenate((finalSeg, (np.zeros((128-(song.shape[0]-numBeats), 88))))))
+        segs.append(np.concatenate((finalSeg, (np.zeros((64-(song.shape[0]-numBeats), 88))))))
 
     for i in range(len(segs)):
         segs[i] = segs[i].T

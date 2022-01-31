@@ -107,7 +107,7 @@ def check_dir(load_dir):
     if not os.path.exists(load_dir + 'result'):
         os.mkdir(load_dir + 'result')
 
-def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_model_name='model'):
+def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_name='model'):
 
     check_dir(parser.load_dir)
     print("TRAINING")
@@ -116,13 +116,13 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
     Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
     G1.to(device)
-    G2.to(device)
+    #G2.to(device)
     D1.to(device)
 
     """use GPU in parallel"""
     if device == 'cuda':
         G1 = torch.nn.DataParallel(G1)
-        G2 = torch.nn.DataParallel(G2)
+        #G2 = torch.nn.DataParallel(G2)
         D1 = torch.nn.DataParallel(D1)
         print("parallel mode")
 
@@ -132,11 +132,11 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
     beta1, beta2 = 0.9, 0.999
 
     optimizerG1 = torch.optim.Adam([{'params': G1.parameters()}],
-                                  lr=lr * 30,
+                                  lr=lr * 20,
                                   betas=(beta1, beta2))
-    optimizerG2 = torch.optim.Adam([{'params': G2.parameters()}],
+    '''optimizerG2 = torch.optim.Adam([{'params': G2.parameters()}],
                                   lr=lr * 15,
-                                  betas=(beta1, beta2))
+                                  betas=(beta1, beta2))'''
     optimizerD = torch.optim.Adam([{'params': D1.parameters()}],
                                   lr=lr,
                                   betas=(beta1, beta2))
@@ -152,14 +152,14 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
     iteration = 1
     g1_losses = []
-    g2_losses = []
+    #g2_losses = []
     d_losses = []
 
     good_G1s = []
-    good_G2s = []
+    #good_G2s = []
 
     
-    blackImg = torch.zeros((parser.batch_size, 1, 88, 128)).to(device)
+    blackImg = torch.zeros((parser.batch_size, 1, 88, 64)).to(device)
     zeros = torch.zeros((parser.batch_size, 1)).to(device)
     ones = torch.ones((parser.batch_size, 1)).to(device)
 
@@ -168,16 +168,16 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
         print(epoch)
 
         G1.train()
-        G2.train()
+        #G2.train()
         D1.train()
         t_epoch_start = time.time()
 
         epoch_g1_loss = 0.0
-        epoch_g2_loss = 0.0
+        #epoch_g2_loss = 0.0
         epoch_d_loss = 0.0
 
         good_G1 = 0
-        good_G2 = 0
+        #good_G2 = 0
 
 
         print('-----------')
@@ -202,7 +202,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
 
             # for D1
             newCompass1 = G1(prevImgs)
-            newCompass2 = G2(prevImgs)
+            #newCompass2 = G2(prevImgs)
 
             c = rg.choice([0,1], (newCompass1.shape[0],1))
             c_diff = (c-1)*-1
@@ -210,7 +210,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             l = np.reshape(l,(newCompass1.shape[0], 1))
 
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
-            fake2 = torch.cat([prevImgs, newCompass2], dim=3)
+            #fake2 = torch.cat([prevImgs, newCompass2], dim=3)
             fake3 = torch.cat([prevImgs, blackImg[0:newCompass1.shape[0]]], dim=3)
 
 
@@ -218,14 +218,14 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             aux = torch.cat([fake1.detach(), real1], dim = 1)
             D_input_G1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
 
-            aux = torch.cat([fake2.detach(), real1], dim = 1)
+            #aux = torch.cat([fake2.detach(), real1], dim = 1)
             D_input_G2 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
 
             aux = torch.cat([fake3.detach(), real1], dim = 1)
             D_input_black = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1).to(device)
 
             out_1_D1 = D1(D_input_G1)
-            out_2_D1 = D1(D_input_G2)
+            #out_2_D1 = D1(D_input_G2)
             out_3_D1 = D1(D_input_black)
 
 
@@ -237,7 +237,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1).to(device)
 
             loss_1_D1 = criterionGAN(out_1_D1, labels).to(device)
-            loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
+            #loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
             loss_3_D1 = criterionGAN(out_3_D1, labels).to(device)
 
             '''print(out_1_D1)
@@ -248,36 +248,36 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             print(labels)
             print(loss_2_D1)'''
 
-            if(loss_2_D1 > 0.4):
+            '''if(loss_2_D1 > 0.4):
               cv2.imwrite("goodImg_G2.png", np.array(newCompass2[0][0,:,:].cpu())* 254)
               cv2.imwrite("goodImg2._G2.png", np.array(newCompass2[1][0,:,:].cpu())* 254)
               good_G2 +=1
-              '''print(out_2_D1)
+              print(out_2_D1)
               print(labels)'''
             if(loss_1_D1 > 0.4):
-              cv2.imwrite("goodImg_G1.png", np.array(newCompass2[0][0,:,:].cpu())* 254)
-              cv2.imwrite("goodImg2_G1.png", np.array(newCompass2[1][0,:,:].cpu())* 254)
+              cv2.imwrite("goodImg_G1.png", np.array(newCompass1[0][0,:,:].cpu())* 254)
+              cv2.imwrite("goodImg2_G1.png", np.array(newCompass1[1][0,:,:].cpu())* 254)
               good_G1 +=1
               '''print(out_1_D1)
               print(labels)'''
             
             
-            D_L_CGAN1 = loss_1_D1 + loss_2_D1 + loss_3_D1
+            D_L_CGAN1 = loss_1_D1 + loss_3_D1
 
             # total
             D_loss = D_L_CGAN1
-            if(epoch % 3 == 0):
+            if(epoch % 2 == 0):
               D_loss.backward()
               optimizerD.step()
 
             # Train Generator
             set_requires_grad([D1, D1], False)
             optimizerG1.zero_grad()
-            optimizerG2.zero_grad()
+            #optimizerG2.zero_grad()
 
             # L_CGAN1
 
-            #G2
+            #G1
 
             '''fakeG1 = torch.cat([prevImgs, newCompass1], dim=3)
             fakeG2 = torch.cat([prevImgs, newCompass2], dim=3)
@@ -289,7 +289,7 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             D_input_1_G2 = torch.cat([fakeG2.detach(), real1], dim = 1).to(device)
             D_input_2_G2 = torch.cat([real1, fakeG2.detach()], dim = 1).to(device)'''
 
-            D_input_3 = torch.cat([fake2, fake1], dim = 1).to(device)
+            '''D_input_3 = torch.cat([fake2, fake1], dim = 1).to(device)
 
             aux = torch.cat([fake1, fake2], dim = 1)
             D_input_3 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
@@ -299,22 +299,24 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             out_D1_G2 = D1(D_input_G2)
   
 
-            out_3_D1 = D1(D_input_3)
+            out_3_D1 = D1(D_input_3)'''
             '''print(out_3_D1)
             print(np.sum(np.array(newCompass1[0][0].cpu())))
             cv2.imwrite("test.png", np.array(D_input_3[0][0,:,:].cpu())* 2)'''
 
+            out_D1_G1 = D1(D_input_G1)
+
 
             loss_1_G1 = criterionGAN(out_D1_G1, inv_labels).to(device)
-            loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
+            #loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
 
 
-            G_L_CGAN1 = loss_1_G1*3 + loss_2_G1
+            G_L_CGAN1 = loss_1_G1
 
-            loss_1_G2 = criterionGAN(out_D1_G2, inv_labels).to(device)
+            '''loss_1_G2 = criterionGAN(out_D1_G2, inv_labels).to(device)
             loss_2_G2 = criterionGAN(out_3_D1, labels)
 
-            G_L_CGAN2 = loss_1_G2*3 + loss_2_G2
+            G_L_CGAN2 = loss_1_G2*3 + loss_2_G2'''
 
 
 
@@ -325,51 +327,52 @@ def train_model(G1, G2, D1, dataloader, val_dataset, num_epochs, parser, save_mo
             optimizerG1.step()
 
             optimizerG1.zero_grad()
-            optimizerG2.zero_grad()
+            '''optimizerG2.zero_grad()
 
             G_loss_G2 = G_L_CGAN2
             G_loss_G2.requires_grad = True
             G_loss_G2.backward()
-            optimizerG2.step()
+            optimizerG2.step()'''
 
             epoch_d_loss += D_loss.item()
             epoch_g1_loss += G_loss_G1.item()
-            epoch_g2_loss += G_loss_G2.item()
+            #epoch_g2_loss += G_loss_G2.item()
 
         t_epoch_finish = time.time()
         print('-----------')
-        print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Good_G1: {} || Epoch_G2_Loss:{:.4f} || Good_G2: {} '.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, good_G1,epoch_g2_loss/batch_size, good_G2))
+        #print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Good_G1: {} || Epoch_G2_Loss:{:.4f} || Good_G2: {} '.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, good_G1,epoch_g2_loss/batch_size, good_G2))
+        print('epoch {} || Epoch_D_Loss:{:.4f} || Epoch_G1_Loss:{:.4f} || Good_G1: {}'.format(epoch, epoch_d_loss/batch_size, epoch_g1_loss/batch_size, good_G1))
         print('timer: {:.4f} sec.'.format(t_epoch_finish - t_epoch_start))
 
         d_losses += [epoch_d_loss/batch_size]
         g1_losses += [epoch_g1_loss/batch_size]
-        g2_losses += [epoch_g2_loss/batch_size]
+        #g2_losses += [epoch_g2_loss/batch_size]
         good_G1s.append(good_G1)
-        good_G2s.append(good_G2)
+        #good_G2s.append(good_G2)
         t_epoch_start = time.time()
         #plot_log({'G1':g1_losses, 'G2':g2_losses, 'D':d_losses}, save_model_name)
-        plot_log({'G1': good_G1s, 'G2': good_G2s}, save_model_name, parser.load_dir)
+        #plot_log({'G1': good_G1s, 'G2': good_G2s}, save_model_name, parser.load_dir)
 
         if(epoch%10 == 0):
             if parser.load is not None:
                 torch.save(G1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G1_'+str(epoch + int(parser.load) + 1)+'.pth')
-                torch.save(G2.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G2_'+str(epoch + int(parser.load) + 1)+'.pth')
+                #torch.save(G2.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G2_'+str(epoch + int(parser.load) + 1)+'.pth')
                 torch.save(D1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_D1_'+str(epoch+ int(parser.load) + 1)+'.pth')
             else:
                 torch.save(G1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G1_'+str(epoch)+'.pth')
-                torch.save(G2.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G2_'+str(epoch)+'.pth')
+                #torch.save(G2.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_G2_'+str(epoch)+'.pth')
                 torch.save(D1.state_dict(), parser.load_dir + 'checkpoints/'+save_model_name+'_D1_'+str(epoch)+'.pth')
             G1.eval()
-            G2.eval()
-            evaluate(G1, G2, val_dataset, device, '{:s}/val_{:d}'.format('result', epoch))
+            #G2.eval()
+            #evaluate(G1, G2, val_dataset, device, '{:s}/val_{:d}'.format('result', epoch))
 
-    return G1, G2, D1
+    return G1, D1
 
 
 
 def main(parser):
     G1 = Generator(input_channels=1, output_channels=1)
-    G2 = Generator(input_channels=1, output_channels=1)
+    #G2 = Generator(input_channels=1, output_channels=1)
     D1 = Discriminator(input_channels=2)
 
     '''load'''
@@ -379,8 +382,8 @@ def main(parser):
         G1_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_G1_'+parser.load+'.pth')
         G1.load_state_dict(fix_model_state_dict(G1_weights))
 
-        G2_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_G2_'+parser.load+'.pth')
-        G2.load_state_dict(fix_model_state_dict(G2_weights))
+        '''G2_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_G2_'+parser.load+'.pth')
+        G2.load_state_dict(fix_model_state_dict(G2_weights))'''
 
         D1_weights = torch.load(parser.load_dir + 'checkpoints/ST-CGAN_D1_'+parser.load+'.pth')
         D1.load_state_dict(fix_model_state_dict(D1_weights))
@@ -400,7 +403,7 @@ def main(parser):
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True) #num_workers=4
 
-    G1_update, D1_update = train_model(G1, G2, D1, dataloader=train_dataloader,
+    G1_update, D1_update = train_model(G1, D1, dataloader=train_dataloader,
                                                             val_dataset=val_dataset, num_epochs=num_epochs,
                                                             parser=parser, save_model_name='ST-CGAN')
 

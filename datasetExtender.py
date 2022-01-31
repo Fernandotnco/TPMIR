@@ -7,14 +7,14 @@ def shiftPianoRoll(matrix, n):
     if(n > 0):
         if(np.sum(matrix[:n]) == 0):
             reduced = np.delete(matrix, list(range(n)), 0)
-            newMatrix = np.concatenate((reduced, np.zeros((n, 128))), axis = 0)
+            newMatrix = np.concatenate((reduced, np.zeros((n, 64))), axis = 0)
             return newMatrix
         else:
             return None
     else:
         if(np.sum(matrix[n:]) == 0):
             reduced = np.delete(matrix, list(range(87, 87 + n, -1)), 0)
-            newMatrix = np.concatenate((np.zeros((-n, 128)), reduced), axis = 0)
+            newMatrix = np.concatenate((np.zeros((-n, 64)), reduced), axis = 0)
             return newMatrix
         else:
             return None
