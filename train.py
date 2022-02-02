@@ -21,7 +21,7 @@ from numpy.random import default_rng
 
 torch.manual_seed(44)
 # choose your device
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 
 def get_parser():
     parser = argparse.ArgumentParser(
