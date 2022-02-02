@@ -271,7 +271,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
               optimizerD.step()
 
             # Train Generator
-            set_requires_grad([D1, D1], False)
+            set_requires_grad([D1], False)
             optimizerG1.zero_grad()
             #optimizerG2.zero_grad()
 

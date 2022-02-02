@@ -43,7 +43,7 @@ def weights_init(init_type='gaussian'):
 class Dense(nn.Module):
     def __init__(self, in_channels, out_channels, before = None, after = False, bias=False, device=None, dtype=None):
         super(Dense, self).__init__()
-        self.dense = nn.Linear(in_channels, out_channels, bias, device, dtype)
+        self.dense = nn.Linear(in_channels, out_channels, bias = bias, device = device, dtype = dtype)
         self.dense.apply(weights_init('gaussian'))
 
         if after=='BN':
