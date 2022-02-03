@@ -39,6 +39,7 @@ def get_parser():
     parser.add_argument('-lr', '--lr', type=float, default=2e-4)
     parser.add_argument('--dataset_dir', type=str, default='dataset')
     parser.add_argument('--load_dir', type=str, default='./')
+    parser.add_argument('--disc_epochs', type=int, default='2')
 
     return parser
 
@@ -266,7 +267,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             # total
             D_loss = D_L_CGAN1
-            if(epoch % 2 == 0):
+            if(epoch % parser.disc_epochs == 0):
               D_loss.backward()
               optimizerD.step()
 
