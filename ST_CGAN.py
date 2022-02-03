@@ -154,21 +154,25 @@ class Generator(nn.Module):
     def __init__(self, input_channels=3, output_channels=1):
         super(Generator, self).__init__()
 
-        self.Cv0 = Cvi(input_channels, 32)
+        self.Cv0 = Cvi(input_channels, 16, padding = 0)
 
-        self.Cv1 = Cvi(32, 64, before='LReLU', after='BN')
+        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', stride = 1, padding = 5, dilation = 3)
 
-        self.Cv2 = Cvi(64, 128, before='LReLU', after='BN')
+        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN')
 
-        self.Cv3 = Cvi(128, 256, before='LReLU', after='BN', stride = 1)
+        self.Cv3 = Cvi(64, 64, before='LReLU', after='BN', stride = 1)
 
-        self.CvT4 = CvTi(256, 128, before='ReLU', after='BN', stride = 1)
+        self.Cv4 = Cvi(64, 128, before='LReLU', after='BN', stride = 1)
 
-        self.CvT5 = CvTi(256, 64, before='ReLU', after='BN')
+        self.CvT5 = CvTi(128, 64, before='ReLU', after='BN', stride = 1)
 
-        self.CvT6 = CvTi(128, 32, before='ReLU', after='BN')
+        self.CvT6 = CvTi(128, 64, before='ReLU', after='BN', stride = 1)
 
-        self.CvT7 = CvTi(64, output_channels, before='ReLU', after='TernaryTanh')
+        self.CvT7 = CvTi(128, 32, before='ReLU', after='BN', padding = 1, dilation = 1)
+
+        self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = 1, padding = 2, dilation = 2)
+
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='TernaryTanh', padding = 0)
 
     def forward(self, input):
         #encoder
@@ -176,17 +180,20 @@ class Generator(nn.Module):
         x1 = self.Cv1(x0)
         x2 = self.Cv2(x1)
         x3 = self.Cv3(x2)
-        #decoder
-        x4 = self.CvT4(x3)
+        x4 = self.Cv4(x3)
+        x5 = self.CvT5(x4)
 
-        cat1 = torch.cat([x4, x2], dim=1)
-        x5 = self.CvT5(cat1)
+        cat1 = torch.cat([x5, x3], dim=1)
+        x6 = self.CvT6(cat1)
 
-        cat2 = torch.cat([x5, x1], dim=1)
-        x6 = self.CvT6(cat2)
+        cat2 = torch.cat([x6, x2], dim=1)
+        x7 = self.CvT7(cat2)
 
-        cat3 = torch.cat([x6, x0], dim=1)
-        out = self.CvT7(cat3)
+        cat3 = torch.cat([x7, x1], dim=1)
+        x8 = self.CvT8(cat3)
+
+        cat4 = torch.cat([x8, x0], dim=1)
+        out = self.CvT9(cat4)
 
 
         return out
