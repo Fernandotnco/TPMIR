@@ -233,9 +233,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             labels = torch.cat([aux[l,c], aux[l,c_diff]], axis = 1)
             inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1)
-            print(labels)
-            print(inv_labels)
-
             loss_1_D1 = criterionGAN(out_1_D1, labels).to(device)
             #loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
 
