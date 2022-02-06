@@ -255,12 +255,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
               good_G2 +=1
               print(out_2_D1)
               print(labels)'''
-            if(loss_1_D1 > 0.4):
-              cv2.imwrite("goodImg_G1.png", np.array(newCompass1[0][0,:,:].cpu())* 254)
-              cv2.imwrite("goodImg2_G1.png", np.array(newCompass1[1][0,:,:].cpu())* 254)
-              good_G1 +=1
-              '''print(out_1_D1)
-              print(labels)'''
             
             
             D_L_CGAN1 = loss_1_D1 + loss_3_D1
@@ -334,6 +328,13 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             G_loss_G2.requires_grad = True
             G_loss_G2.backward()
             optimizerG2.step()'''
+
+            if(loss_1_D1 > 0.4):
+              cv2.imwrite("goodImg_G1.png", np.array(newCompass1[0][0,:,:].detach().cpu())* 254)
+              cv2.imwrite("goodImg2_G1.png", np.array(newCompass1[1][0,:,:].detach().cpu())* 254)
+              good_G1 +=1
+              '''print(out_1_D1)
+              print(labels)'''
 
             epoch_d_loss += D_loss.item()
             epoch_g1_loss += G_loss_G1.item()
