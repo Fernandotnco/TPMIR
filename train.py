@@ -314,13 +314,11 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            print(G_loss_G1)
             #G_loss_G1.requires_grad = False
-            a = list(G1.parameters())[0].clone()
+            #a = list(G1.parameters())[0].clone()
             G_loss_G1.backward()
             optimizerG1.step()
-            b = list(G1.parameters())[0].clone()
-            print(a==b)
+            #b = list(G1.parameters())[0].clone()
 
 
             optimizerG1.zero_grad()
