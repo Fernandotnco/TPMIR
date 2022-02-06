@@ -172,7 +172,7 @@ class Generator(nn.Module):
 
         self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = 1, padding = 2, dilation = 2)
 
-        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='TernaryTanh', padding = 0)
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh', padding = 0)
 
     def forward(self, input):
         #encoder
