@@ -93,7 +93,7 @@ class ImageDataset(data.Dataset):
             preSeg = convert_tensor(preSeg)
 
 
-        return img, preSeg
+        return img*127.5, preSeg*127.5
 
 if __name__ == '__main__':
     '''img = Image.open('../dataset/train/train_A/test.png').convert('RGB')

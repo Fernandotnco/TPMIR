@@ -196,6 +196,8 @@ class Generator(nn.Module):
         cat4 = torch.cat([x8, x0], dim=1)
         out = self.CvT9(cat4)
 
+        out = (out + 1)/2
+
 
         return out
 
