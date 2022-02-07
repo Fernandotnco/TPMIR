@@ -130,7 +130,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     print("device:{}".format(device))
 
     lr = parser.lr
-    beta1, beta2 = 0.9, 0.999
+    beta1, beta2 = 0.8, 0.997
 
     optimizerG1 = torch.optim.Adam([{'params': G1.parameters()}],
                                   lr=lr * 20,
@@ -311,11 +311,13 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
+            optimizerG1.zero_grad()
             #G_loss_G1.requires_grad = False
             #a = list(G1.parameters())[0].clone()
             G_loss_G1.backward()
             optimizerG1.step()
             #b = list(G1.parameters())[0].clone()
+            #print(a==b)
 
 
             optimizerG1.zero_grad()
