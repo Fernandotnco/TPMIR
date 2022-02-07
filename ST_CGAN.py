@@ -78,7 +78,7 @@ class Cvi(nn.Module):
                  padding=1, dilation=1, groups=1, bias=True):
         super(Cvi, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
-        self.conv.apply(weights_init('gaussian'))
+        self.conv.apply(weights_init('orthogonal'))
 
         if after=='BN':
             self.after = nn.BatchNorm2d(out_channels)
@@ -115,10 +115,10 @@ class Cvi(nn.Module):
 
 class CvTi(nn.Module):
     def __init__(self, in_channels, out_channels, before=None, after=False, kernel_size=4, stride=2,
-                 padding=1, dilation=1, groups=1, bias=False):
+                 padding=1, dilation=1, groups=1, bias=True):
         super(CvTi, self).__init__()
         self.conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding, bias = bias)
-        self.conv.apply(weights_init('gaussian'))
+        self.conv.apply(weights_init('orthogonal'))
 
         if after=='BN':
             self.after = nn.BatchNorm2d(out_channels)
@@ -154,7 +154,7 @@ class Generator(nn.Module):
     def __init__(self, input_channels=3, output_channels=1):
         super(Generator, self).__init__()
 
-        self.Cv0 = Cvi(input_channels, 16, padding = 0)
+        self.Cv0 = Cvi(input_channels, 16, padding = 0, after = 'BN')
 
         self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', stride = 1, padding = 5, dilation = 3)
 
@@ -164,15 +164,15 @@ class Generator(nn.Module):
 
         self.Cv4 = Cvi(64, 128, before='LReLU', after='BN', stride = 1)
 
-        self.CvT5 = CvTi(128, 64, before='ReLU', after='BN', stride = 1)
+        self.CvT5 = CvTi(128, 64, before='ReLU', after='sigmoid', stride = 1)
 
-        self.CvT6 = CvTi(128, 64, before='ReLU', after='BN', stride = 1)
+        self.CvT6 = CvTi(128, 64, before='ReLU', after='sigmoid', stride = 1)
 
-        self.CvT7 = CvTi(128, 32, before='ReLU', after='BN', padding = 1, dilation = 1)
+        self.CvT7 = CvTi(128, 32, before='ReLU', after='sigmoid', padding = 1, dilation = 1)
 
-        self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = 1, padding = 2, dilation = 2)
+        self.CvT8 = CvTi(64, 16, before='ReLU', after='sigmoid', stride = 1, padding = 2, dilation = 2)
 
-        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='TernaryTanh', padding = 0)
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh', padding = 0)
 
     def forward(self, input):
         #encoder
