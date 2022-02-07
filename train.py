@@ -133,7 +133,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     beta1, beta2 = 0.9, 0.999
 
     optimizerG1 = torch.optim.Adam([{'params': G1.parameters()}],
-                                  lr=lr,
+                                  lr=lr*10,
                                   betas=(beta1, beta2))
     '''optimizerG2 = torch.optim.Adam([{'params': G2.parameters()}],
                                   lr=lr * 15,
@@ -323,7 +323,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             else:
                 set_requires_grad([D1], True)  # enable backprop$
                 optimizerD.zero_grad()
-                D_loss.backward(retain_graph=True)
+                D_loss.backward(retain_graph=False)
                 optimizerD.step()
                 good_G1 +=1
             #b = list(G1.parameters())[0].clone()
