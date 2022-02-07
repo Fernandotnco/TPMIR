@@ -75,7 +75,7 @@ class Dense(nn.Module):
 
 class Cvi(nn.Module):
     def __init__(self, in_channels, out_channels, before=None, after=False, kernel_size=4, stride=2,
-                 padding=1, dilation=1, groups=1, bias=False):
+                 padding=1, dilation=1, groups=1, bias=True):
         super(Cvi, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
         self.conv.apply(weights_init('gaussian'))
