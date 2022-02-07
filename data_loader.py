@@ -93,12 +93,9 @@ class ImageDataset(data.Dataset):
         else:
             preSeg = Image.open(self.dir + '/' +  self.img_list[index - 1])
             preSeg = convert_tensor(preSeg)
-        print(img.shape)
         img = cv2.resize(np.array(img[0]), (64*3, 88*3), interpolation = cv2.INTER_NEAREST)
-        print(img.shape)
         preSeg = cv2.resize(np.array(preSeg[0]), (64*3, 88*3), interpolation = cv2.INTER_NEAREST)
         img = torch.tensor([img])
-        print(img.shape)
         preSeg = torch.tensor([preSeg])
 
         return img*127.5, preSeg*127.5
