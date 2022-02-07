@@ -215,6 +215,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             real1 = torch.cat([prevImgs, images], dim=3)
             aux = torch.cat([fake1, real1], dim = 1)
+
             D_input_G1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
 
 
@@ -314,20 +315,23 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            set_requires_grad([D1], True)  # enable backprop$
-            optimizerD.zero_grad()
-            D_loss.backward(retain_graph=True)
-            optimizerD.step()
-
-            set_requires_grad([D1], False)
-            optimizerG1.zero_grad()
-            #G_loss_G1.requires_grad = False
+            if(G_loss_G1 > D_loss):
+                set_requires_grad([D1], False)
+                optimizerG1.zero_grad()
+                #G_loss_G1.requires_grad = False
                 #a = list(G1.parameters())[0].clone()
-            G_loss_G1.backward()
-            optimizerG1.step()
+                G_loss_G1.backward()
+                optimizerG1.step()
+            else:
+                set_requires_grad([D1], True)  # enable backprop$
+                optimizerD.zero_grad()
+                D_loss.backward(retain_graph=False)
+                optimizerD.step()
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
 
+
+            optimizerG1.zero_grad()
             '''optimizerG2.zero_grad()
 
             G_loss_G2 = G_L_CGAN2

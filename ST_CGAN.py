@@ -165,13 +165,13 @@ class Generator(nn.Module):
 
         self.Cv4 = Cvi(64, 128, before='LReLU', after='BN', stride = 1)
 
-        self.CvT5 = CvTi(128, 64, before='ReLU', after='sigmoid', stride = 1)
+        self.CvT5 = CvTi(128, 64, before='ReLU', after='BN', stride = 1)
 
-        self.CvT6 = CvTi(128, 64, before='ReLU', after='sigmoid', stride = 1)
+        self.CvT6 = CvTi(128, 64, before='ReLU', after='BN', stride = 1)
 
-        self.CvT7 = CvTi(128, 32, before='ReLU', after='sigmoid', padding = 1, dilation = 1)
+        self.CvT7 = CvTi(128, 32, before='ReLU', after='BN', padding = 1, dilation = 1)
 
-        self.CvT8 = CvTi(64, 16, before='ReLU', after='sigmoid', stride = 1, padding = 2, dilation = 2)
+        self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = 1, padding = 2, dilation = 2)
 
         self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh', padding = 0)
 
