@@ -173,7 +173,7 @@ class Generator(nn.Module):
 
         self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = 1, padding = 2, dilation = 2)
 
-        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='tanh', padding = 0)
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh', padding = 0)
 
     def forward(self, input):
         #encoder
@@ -216,7 +216,9 @@ class Discriminator(nn.Module):
 
         self.Cv4 = Cvi(128, 128, before='LReLU', after='softmax', kernel_size = 3)
 
-        self.l1 = Dense(1536, 512, before = 'ReLu' , after = 'softmax')
+        #self.l1 = Dense(1536, 512, before = 'ReLu' , after = 'softmax')
+
+        self.l1 = Dense(13824, 512, before = 'ReLu' , after = 'softmax')
 
         self.l2 = Dense(512, 128, before = 'ReLu' , after = 'softmax')
 

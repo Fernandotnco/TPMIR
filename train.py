@@ -210,7 +210,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
             #fake2 = torch.cat([prevImgs, newCompass2], dim=3)
-            fake3 = torch.cat([prevImgs, blackImg[0:newCompass1.shape[0]]], dim=3)
 
 
             real1 = torch.cat([prevImgs, images], dim=3)
