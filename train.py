@@ -323,7 +323,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             else:
                 set_requires_grad([D1], True)  # enable backprop$
                 optimizerD.zero_grad()
-                D_loss.backward(retain_graph=False)
+                D_loss.backward(retain_graph=True)
                 optimizerD.step()
                 good_G1 +=1
             #b = list(G1.parameters())[0].clone()
