@@ -198,8 +198,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             rg = default_rng()
 
             # Train Discriminator
-            set_requires_grad([D1], True)  # enable backprop$
-            optimizerD.zero_grad()
 
             # for D1
             newCompass1 = G1(prevImgs)
@@ -261,7 +259,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
                 optimizerD.step()'''
 
             # Train Generator
-            set_requires_grad([D1], False)
             #optimizerG2.zero_grad()
 
             # L_CGAN1
@@ -320,7 +317,9 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
                 G_loss_G1.backward()
                 optimizerG1.step()
             else:
-                D_loss.backward(retain_graph=True)
+                set_requires_grad([D1], True)  # enable backprop$
+                optimizerD.zero_grad()
+                D_loss.backward(retain_graph=False)
                 optimizerD.step()
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
