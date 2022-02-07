@@ -316,7 +316,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             G_loss_G1 = G_L_CGAN1
             set_requires_grad([D1], True)  # enable backprop$
             optimizerD.zero_grad()
-            D_loss.backward(retain_graph=False)
+            D_loss.backward(retain_graph=True)
             optimizerD.step()
 
             set_requires_grad([D1], False)
