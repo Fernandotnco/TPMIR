@@ -325,6 +325,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
                 optimizerD.zero_grad()
                 D_loss.backward(retain_graph=False)
                 optimizerD.step()
+                good_G1 +=1
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
 
@@ -339,7 +340,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             if(loss_1_D1 > 0.4):
               cv2.imwrite("goodImg_G1.png", np.array(newCompass1[0][0,:,:].detach().cpu())* 254)
               cv2.imwrite("goodImg2_G1.png", np.array(newCompass1[1][0,:,:].detach().cpu())* 254)
-              good_G1 +=1
               '''print(out_1_D1)
               print(labels)'''
 
