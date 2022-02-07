@@ -88,6 +88,7 @@ class ImageDataset(data.Dataset):
             preSeg = Image.fromarray(preSeg)
             preSeg = convert_tensor(preSeg)
             preSeg =  TernaryTanh(preSeg)
+            preSeg = preSeg / 127.5
         else:
             preSeg = Image.open(self.dir + '/' +  self.img_list[index - 1])
             preSeg = convert_tensor(preSeg)
