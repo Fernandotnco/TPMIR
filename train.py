@@ -133,7 +133,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     beta1, beta2 = 0.8, 0.997
 
     optimizerG1 = torch.optim.Adam([{'params': G1.parameters()}],
-                                  lr=lr * 20,
+                                  lr=lr * 30,
                                   betas=(beta1, beta2))
     '''optimizerG2 = torch.optim.Adam([{'params': G2.parameters()}],
                                   lr=lr * 15,
