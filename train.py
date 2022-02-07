@@ -256,9 +256,9 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             # total
             D_loss = D_L_CGAN1
-            if(epoch % parser.disc_epochs == 0):
+            '''if(epoch % parser.disc_epochs == 0):
                 D_loss.backward(retain_graph=True)
-                optimizerD.step()
+                optimizerD.step()'''
 
             # Train Generator
             set_requires_grad([D1], False)
@@ -293,11 +293,13 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             print(np.sum(np.array(newCompass1[0][0].cpu())))
             cv2.imwrite("test.png", np.array(D_input_3[0][0,:,:].cpu())* 2)'''
 
-            out_D1_G1 = D1(D_input_G1)
+            #out_D1_G1 = D1(D_input_G1)
 
 
-            loss_1_G1 = criterionGAN(out_D1_G1, inv_labels)
+            #loss_1_G1 = criterionGAN(out_D1_G1, inv_labels)
             #loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
+
+            loss_1_G1 = criterionGAN(out_1_D1, inv_labels)
 
 
             G_L_CGAN1 = loss_1_G1
@@ -308,14 +310,18 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             G_L_CGAN2 = loss_1_G2*3 + loss_2_G2'''
 
 
-
             #total
             G_loss_G1 = G_L_CGAN1
-            optimizerG1.zero_grad()
-            #G_loss_G1.requires_grad = False
-            #a = list(G1.parameters())[0].clone()
-            G_loss_G1.backward()
-            optimizerG1.step()
+            if(G_loss_G1 > D_loss):
+                set_requires_grad([D1], False)
+                optimizerG1.zero_grad()
+                #G_loss_G1.requires_grad = False
+                #a = list(G1.parameters())[0].clone()
+                G_loss_G1.backward()
+                optimizerG1.step()
+            else:
+                D_loss.backward(retain_graph=True)
+                optimizerD.step()
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
 
