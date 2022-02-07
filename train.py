@@ -316,14 +316,13 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             #total
             G_loss_G1 = G_L_CGAN1
             if(G_loss_G1 > D_loss):
-                set_requires_grad([D1], False)
+                #set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
-                #G_loss_G1.requires_grad = False
                 #a = list(G1.parameters())[0].clone()
                 G_loss_G1.backward()
                 optimizerG1.step()
             else:
-                set_requires_grad([D1], True)  # enable backprop$
+                #set_requires_grad([D1], True)  # enable backprop$
                 optimizerD.zero_grad()
                 D_loss.backward(retain_graph=False)
                 optimizerD.step()
@@ -331,7 +330,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             #print(a==b)
 
 
-            optimizerG1.zero_grad()
             '''optimizerG2.zero_grad()
 
             G_loss_G2 = G_L_CGAN2

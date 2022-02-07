@@ -173,7 +173,7 @@ class Generator(nn.Module):
 
         self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = 1, padding = 2, dilation = 2)
 
-        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh', padding = 0)
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='ternaryTanh', padding = 0)
 
     def forward(self, input):
         #encoder
@@ -196,7 +196,9 @@ class Generator(nn.Module):
         cat4 = torch.cat([x8, x0], dim=1)
         out = self.CvT9(cat4)
 
-        out = (out + 1)/2
+        #out = (out + 1)/2
+
+        out.required_grad = True
 
 
         return out
