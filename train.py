@@ -121,11 +121,11 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     D1.to(device)
 
     """use GPU in parallel"""
-    if device == 'cuda':
+    '''if device == 'cuda':
         G1 = torch.nn.DataParallel(G1)
         #G2 = torch.nn.DataParallel(G2)
         D1 = torch.nn.DataParallel(D1)
-        print("parallel mode")
+        print("parallel mode")'''
 
     print("device:{}".format(device))
 
@@ -133,7 +133,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     beta1, beta2 = 0.9, 0.999
 
     optimizerG1 = torch.optim.Adam([{'params': G1.parameters()}],
-                                  lr=lr*10,
+                                  lr=lr*2,
                                   betas=(beta1, beta2))
     '''optimizerG2 = torch.optim.Adam([{'params': G2.parameters()}],
                                   lr=lr * 15,
@@ -314,7 +314,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            if(G_loss_G1 > D_loss):
+            if(epoch%2 == 0):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
