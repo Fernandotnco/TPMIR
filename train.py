@@ -324,7 +324,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             if(epoch%4 == 0 or trainG):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
-                a = list(G1.parameters())[0].clone()
+                #a = list(G1.parameters())[0].clone()
                 G_loss_G1.backward()
                 optimizerG1.step()
             else:
@@ -332,9 +332,8 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
                 optimizerD.zero_grad()
                 D_loss.backward()
                 optimizerD.step()
-            b = list(G1.parameters())[0].clone()
-            print(a==b)
-            count += 1
+            #b = list(G1.parameters())[0].clone()
+            #print(a==b)
 
 
             '''optimizerG2.zero_grad()
