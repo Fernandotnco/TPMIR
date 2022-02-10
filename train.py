@@ -314,13 +314,14 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            if((count + epoch)%2 == 0):
+            if(G_loss_G1 > 0.4):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
                 G_loss_G1.backward()
                 optimizerG1.step()
-            else:
+            if(loss_1_D1 > 0.4):
+                good_G1 +=1
                 set_requires_grad([D1], True)  # enable backprop$
                 optimizerD.zero_grad()
                 D_loss.backward(retain_graph=False)
@@ -338,7 +339,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             optimizerG2.step()'''
 
             if(loss_1_D1 > 0.4):
-              good_G1 +=1
               cv2.imwrite("goodImg_G1.png", np.array(newCompass1[0][0,:,:].detach().cpu())* 254)
               cv2.imwrite("goodImg2_G1.png", np.array(newCompass1[1][0,:,:].detach().cpu())* 254)
               '''print(out_1_D1)
