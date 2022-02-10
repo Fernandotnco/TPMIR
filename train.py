@@ -195,6 +195,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             # if size of minibatch is 1, an error would be occured.
             if images.size()[0] == 1:
                 continue
+            set_requires_grad([D1], True)  # enable backprop$
 
             images = images.to(device)
             prevImgs = prevImgs.to(device)
@@ -207,8 +208,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             # for D1
             newCompass1 = G1(prevImgs)
-            randImg = np.random.rand(newCompass1.shape[0], newCompass1.shape[1], newCompass1.shape[2], newCompass1.shape[3])
-            randImg = torch.from_numpy(randImg).float().to(device)
             #newCompass2 = G2(prevImgs)
 
             c = rg.choice([0,1], (newCompass1.shape[0],1))
@@ -217,7 +216,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             l = np.reshape(l,(newCompass1.shape[0], 1))
 
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
-            fake2 = torch.cat([prevImgs, randImg], dim=3)
 
 
             real1 = torch.cat([prevImgs, images], dim=3)
@@ -225,9 +223,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             D_input_1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
 
-            aux = torch.cat([fake2, real1], dim = 1)
-
-            D_input_2 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
 
 
 
@@ -239,7 +234,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
 
             out_1_D1 = D1(D_input_1)
-            out_2_D1 = D1(D_input_2)
             #out_2_D1 = D1(D_input_G2)
 
 
@@ -250,7 +244,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             labels = torch.cat([aux[l,c], aux[l,c_diff]], axis = 1)
             inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1)
             loss_1_D1 = criterionGAN(out_1_D1, labels).to(device)
-            loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
 
             '''print(out_1_D1)
             print(labels)
@@ -268,13 +261,18 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
               print(labels)'''
             
             
-            D_L_CGAN1 = (loss_1_D1*3 + loss_2_D1)/4
+            D_L_CGAN1 = loss_1_D1
 
             # total
             D_loss = D_L_CGAN1
             '''if(epoch % parser.disc_epochs == 0):
                 D_loss.backward(retain_graph=True)
                 optimizerD.step()'''
+
+            optimizerD.zero_grad()
+            #a = list(D1.parameters())[0].clone()
+            D_loss.backward()
+            optimizerD.step()
 
             # Train Generator
             #optimizerG2.zero_grad()
@@ -308,6 +306,18 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             print(np.sum(np.array(newCompass1[0][0].cpu())))
             cv2.imwrite("test.png", np.array(D_input_3[0][0,:,:].cpu())* 2)'''
 
+            newCompass1 = G1(prevImgs)
+
+            fake1 = torch.cat([prevImgs, newCompass1], dim=3)
+
+
+            real1 = torch.cat([prevImgs, images], dim=3)
+            aux = torch.cat([fake1, real1], dim = 1)
+
+            D_input_1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
+
+            out_1_D1 = D1(D_input_1)
+
 
             #loss_1_G1 = criterionGAN(out_D1_G1, inv_labels)
             #loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
@@ -326,25 +336,11 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             #total
             G_loss_G1 = G_L_CGAN1
 
-            if G_loss_G1 > 0.65 and not trainG:
-                trainG = True
-            if(trainG):
-                if G_loss_G1 < 0.35:
-                    trainG = False
-
-
-            if(trainG):
-                set_requires_grad([D1], False)
-                optimizerG1.zero_grad()
-                #a = list(G1.parameters())[0].clone()
-                G_loss_G1.backward()
-                optimizerG1.step()
-            else:
-                set_requires_grad([D1], True)  # enable backprop$
-                optimizerD.zero_grad()
-                #a = list(D1.parameters())[0].clone()
-                D_loss.backward()
-                optimizerD.step()
+            set_requires_grad([D1], False)
+            optimizerG1.zero_grad()
+            #a = list(G1.parameters())[0].clone()
+            G_loss_G1.backward()
+            optimizerG1.step()
             #b = list(D1.parameters())[0].clone()
             #print(a==b)
 
