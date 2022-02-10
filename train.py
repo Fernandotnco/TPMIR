@@ -124,11 +124,11 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     D1.to(device)
 
     """use GPU in parallel"""
-    '''if device == 'cuda':
+    if device == 'cuda':
         G1 = torch.nn.DataParallel(G1)
         #G2 = torch.nn.DataParallel(G2)
         D1 = torch.nn.DataParallel(D1)
-        print("parallel mode")'''
+        print("parallel mode")
 
     print("device:{}".format(device))
 
