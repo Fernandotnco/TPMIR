@@ -312,16 +312,17 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            if(epoch%3 != 2):
-                set_requires_grad([D1], True)  # enable backprop$
-                optimizerD.zero_grad()
-                D_loss.backward()
-                optimizerD.step()
-            else:
+            if(epoch%3 == 2 or d_losses*batch_size < 1000):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
                 G_loss_G1.backward()
+                optimizerG1.step()
+            else:
+                set_requires_grad([D1], True)  # enable backprop$
+                optimizerD.zero_grad()
+                D_loss.backward()
+                optimizerD.step()
                 optimizerG1.step()
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
