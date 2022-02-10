@@ -212,7 +212,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             # for D1
             newCompass1 = G1(prevImgs)
             randImg = np.random.rand(newCompass1.shape[0], newCompass1.shape[1], newCompass1.shape[2], newCompass1.shape[3])
-            randImg = torch.from_numpy(randImg).float()
+            randImg = torch.from_numpy(randImg).float().to(device)
             #newCompass2 = G2(prevImgs)
 
             c = rg.choice([0,1], (newCompass1.shape[0],1))
