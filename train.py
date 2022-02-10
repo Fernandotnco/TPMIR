@@ -273,6 +273,9 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             #a = list(D1.parameters())[0].clone()
             D_loss.backward()
             optimizerD.step()
+            #b = list(D1.parameters())[0].clone()
+            #print(a==b)
+
 
             # Train Generator
             #optimizerG2.zero_grad()
