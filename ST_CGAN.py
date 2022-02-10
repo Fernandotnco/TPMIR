@@ -214,7 +214,9 @@ class Discriminator(nn.Module):
 
         self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv4 = Cvi(128, 128, before='LReLU', after='softmax', kernel_size = 3)
+        self.Cv4 = Cvi(128, 128, before='LReLU', after='BN', kernel_size = 3)
+        
+        self.Cv5 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3)
 
         self.l1 = Dense(1536, 512, before = 'ReLu' , after = 'softmax')
 
@@ -222,7 +224,7 @@ class Discriminator(nn.Module):
 
         self.l3 = Dense(128, 2, before = 'ReLu' , after = 'softmax')
 
-        self.Cv8 = Cvi(512, 2, before='LReLU', after='softmax', kernel_size = 3)
+        self.Cv8 = Cvi(256, 2, before='LReLU', after='softmax', kernel_size = 3)
 
     def forward(self, input):
         x0 = self.Cv0(input)
@@ -230,10 +232,12 @@ class Discriminator(nn.Module):
         x2 = self.Cv2(x1)
         x3 = self.Cv3(x2)
         x4 = self.Cv4(x3)
-        x4 = x4.view(x4.size(0),-1)
+        '''x4 = x4.view(x4.size(0),-1)
         x5 = self.l1(x4)
         x6 = self.l2(x5)
-        out = self.l3(x6)
+        out = self.l3(x6)'''
+        x5 = self.Cv5(x4)
+        out = self.Cv8(x5)
 
         return out
 
