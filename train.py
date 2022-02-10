@@ -189,11 +189,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
         print('Epoch {}/{}'.format(epoch, num_epochs))
         print('(train)')
 
-        if epoch > 0 and d_losses[-1]*batch_size < 1000 and not trainG:
-            trainG = True
-        if(trainG):
-            if g1_losses[-1]*batch_size < 1350:
-                trainG = False
+        trainG = False
 
         for images, prevImgs in tqdm(dataloader):
             # if size of minibatch is 1, an error would be occured.
@@ -330,8 +326,14 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             #total
             G_loss_G1 = G_L_CGAN1
 
+            if G_loss_G1 > 0.65 and not trainG:
+                trainG = True
+            if(trainG):
+                if G_loss_G1 < 0.35:
+                    trainG = False
 
-            if(epoch%4 == 2 or trainG):
+
+            if(trainG):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
