@@ -295,8 +295,6 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             print(np.sum(np.array(newCompass1[0][0].cpu())))
             cv2.imwrite("test.png", np.array(D_input_3[0][0,:,:].cpu())* 2)'''
 
-            #out_D1_G1 = D1(D_input_G1)
-
 
             #loss_1_G1 = criterionGAN(out_D1_G1, inv_labels)
             #loss_2_G1 = criterionGAN(out_3_D1, inv_labels)
@@ -314,18 +312,17 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            if(G_loss_G1 > 0.4):
+            if(epoch%3 != 2):
+                set_requires_grad([D1], True)  # enable backprop$
+                optimizerD.zero_grad()
+                D_loss.backward()
+                optimizerD.step()
+            else:
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
                 G_loss_G1.backward()
                 optimizerG1.step()
-            if(loss_1_D1 > 0.4):
-                good_G1 +=1
-                set_requires_grad([D1], True)  # enable backprop$
-                optimizerD.zero_grad()
-                D_loss.backward(retain_graph=False)
-                optimizerD.step()
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
             count += 1
@@ -339,6 +336,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             optimizerG2.step()'''
 
             if(loss_1_D1 > 0.4):
+              good_G1 +=1
               cv2.imwrite("goodImg_G1.png", np.array(newCompass1[0][0,:,:].detach().cpu())* 254)
               cv2.imwrite("goodImg2_G1.png", np.array(newCompass1[1][0,:,:].detach().cpu())* 254)
               '''print(out_1_D1)
