@@ -6,6 +6,8 @@ from torch.autograd import Variable
 from collections import OrderedDict
 from torchvision import models
 from tqdm import tqdm
+import torch.utils.data as data
+from torchvision import transforms
 
 import matplotlib.pyplot as plt
 import torch.optim as optim
@@ -16,6 +18,7 @@ import time
 import torch
 import os
 import cv2
+from PIL import Image
 
 from numpy.random import default_rng
 
@@ -208,6 +211,8 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             # for D1
             newCompass1 = G1(prevImgs)
+            randImg = np.random.rand(newCompass1.shape[0], newCompass1.shape[1], newCompass1.shape[2], newCompass1.shape[3])
+            randImg = torch.from_numpy(randImg).float()
             #newCompass2 = G2(prevImgs)
 
             c = rg.choice([0,1], (newCompass1.shape[0],1))
@@ -216,13 +221,17 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             l = np.reshape(l,(newCompass1.shape[0], 1))
 
             fake1 = torch.cat([prevImgs, newCompass1], dim=3)
-            #fake2 = torch.cat([prevImgs, newCompass2], dim=3)
+            fake2 = torch.cat([prevImgs, randImg], dim=3)
 
 
             real1 = torch.cat([prevImgs, images], dim=3)
             aux = torch.cat([fake1, real1], dim = 1)
 
-            D_input_G1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
+            D_input_1 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
+
+            aux = torch.cat([fake2, real1], dim = 1)
+
+            D_input_2 = torch.cat([aux[l,c,:,:], aux[l,c_diff,:,:]], dim = 1)
 
 
 
@@ -233,7 +242,8 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             
 
 
-            out_1_D1 = D1(D_input_G1)
+            out_1_D1 = D1(D_input_1)
+            out_2_D1 = D1(D_input_2)
             #out_2_D1 = D1(D_input_G2)
 
 
@@ -244,7 +254,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             labels = torch.cat([aux[l,c], aux[l,c_diff]], axis = 1)
             inv_labels = torch.cat([aux[l,c_diff], aux[l,c]], axis = 1)
             loss_1_D1 = criterionGAN(out_1_D1, labels).to(device)
-            #loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
+            loss_2_D1 = criterionGAN(out_2_D1, labels).to(device)
 
             '''print(out_1_D1)
             print(labels)
@@ -262,7 +272,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
               print(labels)'''
             
             
-            D_L_CGAN1 = loss_1_D1
+            D_L_CGAN1 = (loss_1_D1*3 + loss_2_D1)/4
 
             # total
             D_loss = D_L_CGAN1
@@ -321,7 +331,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             G_loss_G1 = G_L_CGAN1
 
 
-            if(epoch%4 == 0 or trainG):
+            if(epoch%4 == 2 or trainG):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
@@ -330,11 +340,11 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
             else:
                 set_requires_grad([D1], True)  # enable backprop$
                 optimizerD.zero_grad()
+                #a = list(D1.parameters())[0].clone()
                 D_loss.backward()
                 optimizerD.step()
-            #b = list(G1.parameters())[0].clone()
+            #b = list(D1.parameters())[0].clone()
             #print(a==b)
-
 
             '''optimizerG2.zero_grad()
 
