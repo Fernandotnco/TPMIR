@@ -164,7 +164,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
     zeros = torch.zeros((parser.batch_size, 1)).to(device)
     ones = torch.ones((parser.batch_size, 1)).to(device)
 
-
+    count = 0
     for epoch in range(num_epochs+1):
         print(epoch)
 
@@ -314,7 +314,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
             #total
             G_loss_G1 = G_L_CGAN1
-            if(epoch%2 == 0):
+            if((count + epoch)%2 == 0):
                 set_requires_grad([D1], False)
                 optimizerG1.zero_grad()
                 #a = list(G1.parameters())[0].clone()
@@ -328,6 +328,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
                 good_G1 +=1
             #b = list(G1.parameters())[0].clone()
             #print(a==b)
+            count += 1
 
 
             '''optimizerG2.zero_grad()
