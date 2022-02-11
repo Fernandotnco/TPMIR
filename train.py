@@ -118,6 +118,10 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+    
+    foo = torch.tensor([1,2,3])
+    foo = foo.to('cuda')
+
 
     G1.to(device)
     #G2.to(device)

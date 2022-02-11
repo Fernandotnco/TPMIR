@@ -116,9 +116,9 @@ class Cvi(nn.Module):
 
 class CvTi(nn.Module):
     def __init__(self, in_channels, out_channels, before=None, after=False, kernel_size=4, stride=2,
-                 padding=1, dilation=1, groups=1, bias=True):
+                 padding=1, dilation=1, groups=1, bias=True, output_padding = 0):
         super(CvTi, self).__init__()
-        self.conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding, bias = bias)
+        self.conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding, bias = bias,  output_padding= output_padding)
         self.conv.apply(weights_init('orthogonal'))
 
         if after=='BN':
@@ -208,25 +208,25 @@ class Generator2(nn.Module):
     def __init__(self, input_channels=3, output_channels=1):
         super(Generator2, self).__init__()
 
-        self.Cv0 = Cvi(input_channels, 16, after = 'BN', stride = (2,1), dilation = 1)
+        self.Cv0 = Cvi(input_channels, 16, after = 'BN', kernel_size = (8,1), stride = (1,1), padding = 0, dilation = 1)
 
-        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', stride = (2,1), padding = 2, dilation = 1)
+        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', kernel_size = (10,1), stride = (1,1), padding = 1, dilation = 1)
 
-        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', stride = (1,4))
+        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = (1, 4),stride = (2,1), padding = (0,2), dilation = (2,1))
 
         self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', stride = 1)
 
-        self.Cv4 = Cvi(128, 256, before='LReLU', after='BN', stride = 3, padding = 2)
+        self.Cv4 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3, stride = 3, padding = 0)
 
-        self.CvT5 = CvTi(256, 128, before='ReLU', after='BN', stride = 3, padding=2, dilation=1)
+        self.CvT5 = CvTi(256, 128, before='ReLU', after='BN', kernel_size = 3, stride = 3, padding=0, dilation=1)
 
         self.CvT6 = CvTi(256, 64, before='ReLU', after='BN', stride = 1)
 
-        self.CvT7 = CvTi(128, 32, before='ReLU', after='BN', stride = (1,4), padding = (1,0), dilation = 1,)
+        self.CvT7 = CvTi(128, 32, before='ReLU', after='BN',  kernel_size = (1, 4),stride = (2,1), padding = (0,2), dilation = (2,1), output_padding = (1,0))
 
-        self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = (2,1), padding = 2, dilation = 1)
+        self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', kernel_size = (10,1), stride = (1,1), padding = 1, dilation = 1)
 
-        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh',stride=(2,1), padding = 1)
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh',kernel_size = (8,1), stride = (1,1), padding = 0, dilation = 1)
 
     def forward(self, input):
         #encoder
@@ -262,15 +262,15 @@ class Discriminator(nn.Module):
 
         self.Cv0 = Cvi(input_channels, 16)
 
-        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
+        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
+        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
+        self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3)
 
-        self.Cv4 = Cvi(128, 128, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
+        self.Cv4 = Cvi(128, 128, before='LReLU', after='BN', kernel_size = 3)
         
-        self.Cv5 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
+        self.Cv5 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3)
 
         self.l1 = Dense(1536, 2, before = 'ReLu' , after = 'softmax')
 
@@ -278,7 +278,7 @@ class Discriminator(nn.Module):
 
         self.l3 = Dense(128, 2, before = 'ReLu' , after = 'softmax')
 
-        self.Cv8 = Cvi(256, 2, before='LReLU', after='sigmoid', kernel_size = 3, groups = input_channels)
+        self.Cv8 = Cvi(256, 2, before='LReLU', after='sigmoid', kernel_size = 3)
 
     def forward(self, input):
         x0 = self.Cv0(input)
