@@ -1,5 +1,5 @@
 from data_loader import ImageDataset, DatasetSplit
-from ST_CGAN import Generator, Discriminator
+from ST_CGAN import Generator, Discriminator, Generator2
 from torchvision.utils import make_grid
 from torchvision.utils import save_image
 from torch.autograd import Variable
@@ -398,7 +398,7 @@ def train_model(G1, D1, dataloader, val_dataset, num_epochs, parser, save_model_
 
 
 def main(parser):
-    G1 = Generator(input_channels=1, output_channels=1)
+    G1 = Generator2(input_channels=1, output_channels=1)
     #G2 = Generator(input_channels=1, output_channels=1)
     D1 = Discriminator(input_channels=2)
 

@@ -180,6 +180,59 @@ class Generator(nn.Module):
         x0 = self.Cv0(input)
         x1 = self.Cv1(x0)
         x2 = self.Cv2(x1)
+        print(x2.shape)
+        x3 = self.Cv3(x2)
+        print(x3.shape)
+        x4 = self.Cv4(x3)
+        x5 = self.CvT5(x4)
+
+        cat1 = torch.cat([x5, x3], dim=1)
+        x6 = self.CvT6(cat1)
+
+        cat2 = torch.cat([x6, x2], dim=1)
+        x7 = self.CvT7(cat2)
+
+        cat3 = torch.cat([x7, x1], dim=1)
+        x8 = self.CvT8(cat3)
+
+        cat4 = torch.cat([x8, x0], dim=1)
+        out = self.CvT9(cat4)
+
+        out = (out + 1)/2
+
+
+
+        return out
+
+class Generator2(nn.Module):
+    def __init__(self, input_channels=3, output_channels=1):
+        super(Generator2, self).__init__()
+
+        self.Cv0 = Cvi(input_channels, 16, after = 'BN', stride = (2,1), dilation = 1)
+
+        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', stride = (2,1), padding = 2, dilation = 1)
+
+        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', stride = (1,4))
+
+        self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', stride = 1)
+
+        self.Cv4 = Cvi(128, 256, before='LReLU', after='BN', stride = 3, padding = 2)
+
+        self.CvT5 = CvTi(256, 128, before='ReLU', after='BN', stride = 3, padding=2, dilation=1)
+
+        self.CvT6 = CvTi(256, 64, before='ReLU', after='BN', stride = 1)
+
+        self.CvT7 = CvTi(128, 32, before='ReLU', after='BN', stride = (1,4), padding = (1,0), dilation = 1,)
+
+        self.CvT8 = CvTi(64, 16, before='ReLU', after='BN', stride = (2,1), padding = 2, dilation = 1)
+
+        self.CvT9 = CvTi(32, output_channels, before='ReLU', after='Tanh',stride=(2,1), padding = 1)
+
+    def forward(self, input):
+        #encoder
+        x0 = self.Cv0(input)
+        x1 = self.Cv1(x0)
+        x2 = self.Cv2(x1)
         x3 = self.Cv3(x2)
         x4 = self.Cv4(x3)
         x5 = self.CvT5(x4)
@@ -202,21 +255,22 @@ class Generator(nn.Module):
 
         return out
 
+
 class Discriminator(nn.Module):
     def __init__(self, input_channels=4):
         super(Discriminator, self).__init__()
 
         self.Cv0 = Cvi(input_channels, 16)
 
-        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv1 = Cvi(16, 32, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
 
-        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv2 = Cvi(32, 64, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
 
-        self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv3 = Cvi(64, 128, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
 
-        self.Cv4 = Cvi(128, 128, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv4 = Cvi(128, 128, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
         
-        self.Cv5 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3)
+        self.Cv5 = Cvi(128, 256, before='LReLU', after='BN', kernel_size = 3, groups = input_channels)
 
         self.l1 = Dense(1536, 2, before = 'ReLu' , after = 'softmax')
 
@@ -224,7 +278,7 @@ class Discriminator(nn.Module):
 
         self.l3 = Dense(128, 2, before = 'ReLu' , after = 'softmax')
 
-        self.Cv8 = Cvi(256, 2, before='LReLU', after='sigmoid', kernel_size = 3)
+        self.Cv8 = Cvi(256, 2, before='LReLU', after='sigmoid', kernel_size = 3, groups = input_channels)
 
     def forward(self, input):
         x0 = self.Cv0(input)
